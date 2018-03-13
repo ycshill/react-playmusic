@@ -18,7 +18,7 @@ class Progress extends Component {
         ref="progressBar"
       >
         <div className="progress" style={{width: `${this.props.progress}%`, background: this.props.barColor }}></div>
-        <span id="player"></span>
+        
       </div>
     );
   };

@@ -2,8 +2,22 @@ import React, { Component } from 'react';
 import $ from 'jquery';
 import Header from '../components/header/Header';
 import Player from '../pages/player/player';
+import { MUSIC_LIST } from '../data/musiclist';
+import MusicList from '../pages/musicList/musicList';
+import {Router, Route} from 'react-router-dom';
+import createHistory from 'history/createHashHistory';
+
+const history = createHistory();
 
 class Main extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      musicList: MUSIC_LIST,
+      currentMusicItem: MUSIC_LIST[0],
+    }
+  }
+
   componentDidMount() {
     $('#player').jPlayer({
       ready: function() {
@@ -17,11 +31,32 @@ class Main extends Component {
   }
 
   render() {
+    const Home = () =>{
+      return (
+        <Player
+          currentMusicItem = {this.state.currentMusicItem}
+        />
+      );
+    };
+
+    const List = () => {
+      return (
+        <MusicList
+          currentMusicItem = {this.state.currentMusicItem}
+          musicList = {this.state.musicList}
+        />
+      );
+    };
+
     return (
-      <div>
-        <Header />
-        <Player />
-      </div>
+     <Router history={history}>
+       <div>
+         <Header />
+         <audio id="player"></audio>
+         <Route exact path="/" component={Home} />
+         <Route path="/list" component={List} /> 
+       </div> 
+     </Router>
     );
   }
 }

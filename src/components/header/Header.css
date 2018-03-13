@@ -1,12 +1,11 @@
-.header-container {
+.header-container{
     box-sizing: border-box;
-    padding: 15px 25px;
-    border-bottom: 1px solid #ccc;
-    background: white;
-}
-
-.header-title {
-    font-size: 20px;
-    text-indent: 20px;
-    color: red;
-}
+    padding:15px 25px;
+    border-bottom:1px solid #ccc;
+    background: white;    
+  }
+  .header-title{
+      font-size: 20px;
+      text-indent: 20px;
+      color:red;
+    }
