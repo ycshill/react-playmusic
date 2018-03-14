@@ -6,6 +6,8 @@ import { MUSIC_LIST } from '../data/musiclist';
 import MusicList from '../pages/musicList/musicList';
 import {Router, Route} from 'react-router-dom';
 import createHistory from 'history/createHashHistory';
+import Pubsub from 'pubsub-js';
+import MusicItem from '../components/musicItem/MusicItem';
 
 const history = createHistory();
 
@@ -17,19 +19,67 @@ class Main extends Component {
       currentMusicItem: MUSIC_LIST[0],
     }
   }
-
-  componentDidMount() {
-    $('#player').jPlayer({
-      ready: function() {
-        $(this).jPlayer('setMedia', {
-          mp3: 'http://oj4t8z2d5.bkt.clouddn.com/%E9%AD%94%E9%AC%BC%E4%B8%AD%E7%9A%84%E5%A4%A9%E4%BD%BF.mp3'
-        }).jPlayer('play');
-      },
-      supplied: 'mp3',
-      vmode: 'window'
+  
+  playMusic(musicItem) {
+    $('#player').jPlayer('setMedia',{
+      mp3: musicItem.file
+    }).jPlayer('play');
+    this.setState({
+      currentMusicItem:musicItem
     });
   }
 
+  playNext(type) {
+    let index = this.findMusicIndex(this.state.currentMusicItem);
+    let newIndex = 0;
+    let musicLen = this.state.musicList.length;
+    if (type === 'next') {
+      newIndex = (index + 1) % musicLen;
+    } else {
+      newIndex = (index - 1 + musicLen) % musicLen;
+    }
+    this.playMusic(this.state.musicList[newIndex]);
+  }
+
+  findMusicIndex(musicItem) {
+    return this.state.musicList.indexOf(musicItem);
+  }
+
+  componentDidMount() {
+    $('#player').jPlayer({
+      supplied: 'mp3',
+      vmode: 'window'
+    });
+    this.playMusic(this.state.currentMusicItem);
+    $('#player').bind($.jPlayer.event.ended, (e) => {
+      this.playNext('next');
+    });
+    Pubsub.subscribe('PLAY_MUSIC', (msg, musicItem) => {
+      this.playMusic(musicItem);
+    });
+    Pubsub.subscribe('PLAY_PREV', (msg, musicItem) => {
+      this.playNext('prev');
+    });
+    Pubsub.subscribe('PLAY_NEXT', (msg, musicItem) => {
+      this.playNext('next');
+    });
+    Pubsub.subscribe('DELETE_MUSIC', (msg, musicItem) => {
+      // 这种数据驱动的删除方式值得学习
+      this.setState({
+        musicList: this.state.musicList.filter( item => {
+          return item !== musicItem;
+        })
+      })
+    });   
+  }
+
+  componentWillUnmount() {
+    Pubsub.subscribe('PLAY_MUSIC');
+    Pubsub.subscribe('DELETE_MUSIC');
+    Pubsub.subscribe('PLAY_NEXT');
+    Pubsub.subscribe('PLAY_PREV');
+    $('#player').bind($.jPlayer.event.ended);
+  }
   render() {
     const Home = () =>{
       return (
